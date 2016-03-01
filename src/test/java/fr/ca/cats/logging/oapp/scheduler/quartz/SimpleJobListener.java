@@ -6,10 +6,20 @@ import java.util.Random;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SimpleJobListener implements JobListener {
 	
+	private static Logger log = LoggerFactory.getLogger(SimpleJobListener.class);
+	
 	private Random random = new Random();
+	
+	private SimpleSchedulerListener schedulerListener;
+
+	public SimpleJobListener(SimpleSchedulerListener schedulerListener) {
+		this.schedulerListener = schedulerListener;
+	}
 
 	@Override
 	public String getName() {
@@ -30,18 +40,18 @@ public class SimpleJobListener implements JobListener {
 			context.put("serverName", "localhost");
 			context.put("serverIp", "127.0.0.1");
 		}
+		log.info("Job will be executed");
 	}
 
 	@Override
 	public void jobExecutionVetoed(JobExecutionContext context) {
-		// TODO Auto-generated method stub
-
+		log.info("Job was vetoed");
 	}
 
 	@Override
 	public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
-		// TODO Auto-generated method stub
-
+		log.info("Job was executed");
+		schedulerListener.notifyDone();
 	}
 
 }

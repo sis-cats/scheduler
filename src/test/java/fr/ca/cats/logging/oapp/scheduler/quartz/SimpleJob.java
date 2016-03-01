@@ -4,8 +4,6 @@ import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.UUID;
 
-import javax.annotation.PostConstruct;
-
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -107,11 +105,6 @@ public class SimpleJob implements Job {
 		}
 		return sb.toString();
 	}
-	
-	@PostConstruct
-	public void postConstruct() {
-		log.info("Job creation completed");
-	}
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -127,7 +120,7 @@ public class SimpleJob implements Job {
 
 		try {
 			log.trace("Job [{}] is now sleeping in thread [{}]", uuid.toString(), Thread.currentThread().getName());
-			Thread.sleep(2000);
+			Thread.sleep(200);
 		} catch (InterruptedException e) {
 			log.error("Thread sleeping in erro with message [{}]", e.getMessage());
 		}

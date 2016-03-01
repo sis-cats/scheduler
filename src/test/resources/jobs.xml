@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-scheduling-data
+	xmlns="http://www.quartz-scheduler.org/xml/JobSchedulingData"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.quartz-scheduler.org/xml/JobSchedulingData http://www.quartz-scheduler.org/xml/job_scheduling_data_2_0.xsd"
+	version="2.0">
+	<schedule>
+		<job>
+			<name>LectureIndicateurJob</name>
+			<group>groupLectureIndicateurJob</group>
+			<description>LectureIndicateurJob</description>
+			<job-class>fr.ca.cat.oapp.restitution.job.LectureIndicateurJob</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>LectureIndicateurTrigger</name>
+				<job-name>LectureIndicateurJob</job-name>
+				<job-group>groupLectureIndicateurJob</job-group>
+				<!-- It will run every 30 seconds -->
+				<!-- <cron-expression>0/30 * * * * ?</cron-expression> -->
+				<cron-expression>0 0/10 6-20 ? * MON-SAT</cron-expression>
+			</cron>
+		</trigger>
+	</schedule>
+</job-scheduling-data>

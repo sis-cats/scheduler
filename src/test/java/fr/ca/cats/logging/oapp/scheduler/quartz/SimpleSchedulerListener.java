@@ -1,5 +1,8 @@
 package fr.ca.cats.logging.oapp.scheduler.quartz;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
@@ -9,16 +12,29 @@ import org.quartz.listeners.SchedulerListenerSupport;
 
 public class SimpleSchedulerListener extends SchedulerListenerSupport {
 
+	private SimpleTriggerListener listener;
+	
+	private volatile boolean shutingDown = false;
+	
+	private Lock exitLock = new ReentrantLock();
+	
+	public SimpleSchedulerListener(SimpleTriggerListener listener) {
+		super();
+		this.listener = listener;
+	}
+
+	public Lock getExitLock() {
+		return exitLock;
+	}
+	
 	@Override
 	public void jobAdded(JobDetail jobDetail) {
-		// TODO Auto-generated method stub
-		super.jobAdded(jobDetail);
+		listener.incCpt();
 	}
 
 	@Override
 	public void jobDeleted(JobKey jobKey) {
-		// TODO Auto-generated method stub
-		super.jobDeleted(jobKey);
+		listener.decCpt();
 	}
 
 	@Override
@@ -71,8 +87,8 @@ public class SimpleSchedulerListener extends SchedulerListenerSupport {
 
 	@Override
 	public void schedulerShutdown() {
-		// TODO Auto-generated method stub
-		super.schedulerShutdown();
+		shutingDown = true;
+		signal();
 	}
 
 	@Override
@@ -95,8 +111,7 @@ public class SimpleSchedulerListener extends SchedulerListenerSupport {
 
 	@Override
 	public void triggerFinalized(Trigger trigger) {
-		// TODO Auto-generated method stub
-		super.triggerFinalized(trigger);
+		signal();
 	}
 
 	@Override
@@ -127,5 +142,17 @@ public class SimpleSchedulerListener extends SchedulerListenerSupport {
 	public void schedulingDataCleared() {
 		// TODO Auto-generated method stub
 		super.schedulingDataCleared();
+	}
+
+	public void notifyDone() {
+		signal();
+	}
+	
+	private void signal() {
+		if(shutingDown) {
+			synchronized(exitLock) {
+				exitLock.notify();
+			}
+		}
 	}
 }

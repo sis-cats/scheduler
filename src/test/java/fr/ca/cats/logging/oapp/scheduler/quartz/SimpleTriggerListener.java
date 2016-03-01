@@ -1,6 +1,8 @@
 package fr.ca.cats.logging.oapp.scheduler.quartz;
 
 import org.quartz.JobExecutionContext;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.listeners.TriggerListenerSupport;
 import org.slf4j.Logger;
@@ -10,7 +12,22 @@ public class SimpleTriggerListener extends TriggerListenerSupport {
 	
 	private static Logger log = LoggerFactory.getLogger(SimpleTriggerListener.class.getName());
 
-	private int cpt = 0;
+	private volatile int cpt = 0;
+	
+	private Scheduler scheduler;
+
+	public SimpleTriggerListener(Scheduler scheduler) {
+		super();
+		this.scheduler = scheduler;
+	}
+	
+	public synchronized void incCpt() {
+		++cpt;
+	}
+	
+	public synchronized void decCpt() {
+		--cpt;
+	}
 
 	@Override
 	public String getName() {
@@ -30,6 +47,14 @@ public class SimpleTriggerListener extends TriggerListenerSupport {
 		log.info(String.format("Complete a trigger [%s] for job [%s] trigger mode [%s] with context [%s]",
 				trigger.getKey().getName(), trigger.getJobKey().getName(), triggerInstructionCode.name(),
 				context.getFireInstanceId()));
+		decCpt();
+		if(cpt <= 1) {
+			try {
+				scheduler.shutdown(true);
+			} catch (SchedulerException e) {
+				// nothing to do
+			}
+		}
 	}
 
 	@Override
@@ -43,6 +68,7 @@ public class SimpleTriggerListener extends TriggerListenerSupport {
 	@Override
 	public void triggerMisfired(Trigger trigger) {
 		log.info("Misfire a trigger");
+		decCpt();
 	}
 
 }
